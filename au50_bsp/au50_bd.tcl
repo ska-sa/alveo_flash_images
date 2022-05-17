@@ -39,11 +39,11 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # If there is no project opened, this script will create a
 # project, but make sure you do not have an existing project
-# <./myproj/project_1.xpr> in the current working folder.
+# <./au50_bsp/au50_bsp.xpr> in the current working folder.
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project project_1 myproj -part xcu50-fsvh2104-2-e
+   create_project project_1 au50_bsp -part xcu50-fsvh2104-2-e
    set_property BOARD_PART xilinx.com:au50:part0:1.2 [current_project]
 }
 
@@ -252,7 +252,11 @@ proc create_root_design { parentCell } {
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
   set_property -dict [ list \
+   CONFIG.C_ALL_OUTPUTS_2 {1} \
    CONFIG.C_DOUT_DEFAULT {0x00000001} \
+   CONFIG.C_GPIO2_WIDTH {1} \
+   CONFIG.C_IS_DUAL {0} \
+   CONFIG.GPIO2_BOARD_INTERFACE {Custom} \
    CONFIG.GPIO_BOARD_INTERFACE {hbm_cattrip} \
    CONFIG.USE_BOARD_FLOW {true} \
  ] $axi_gpio_0
@@ -260,12 +264,21 @@ proc create_root_design { parentCell } {
   # Create instance: axi_gpio_1, and set properties
   set axi_gpio_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_1 ]
   set_property -dict [ list \
-   CONFIG.C_DOUT_DEFAULT {0xC0FFEE05} \
-   CONFIG.C_TRI_DEFAULT {0xDECADE05} \
+   CONFIG.C_ALL_INPUTS_2 {0} \
+   CONFIG.C_ALL_OUTPUTS {1} \
+   CONFIG.C_ALL_OUTPUTS_2 {1} \
+   CONFIG.C_DOUT_DEFAULT {0x01010101} \
+   CONFIG.C_DOUT_DEFAULT_2 {0xC0FFEE11} \
+   CONFIG.C_IS_DUAL {1} \
+   CONFIG.C_TRI_DEFAULT {0x01010101} \
+   CONFIG.C_TRI_DEFAULT_2 {0xDECADE10} \
  ] $axi_gpio_1
 
   # Create instance: axi_intc_0, and set properties
   set axi_intc_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc:4.1 axi_intc_0 ]
+  set_property -dict [ list \
+   CONFIG.C_IRQ_CONNECTION {1} \
+ ] $axi_intc_0
 
   # Create instance: axi_interconnect_0, and set properties
   set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
@@ -324,7 +337,7 @@ proc create_root_design { parentCell } {
    CONFIG.SYS_RST_N_BOARD_INTERFACE {pcie_perstn} \
    CONFIG.axilite_master_en {true} \
    CONFIG.axilite_master_scale {Megabytes} \
-   CONFIG.axilite_master_size {32} \
+   CONFIG.axilite_master_size {256} \
    CONFIG.axisten_freq {125} \
    CONFIG.en_gt_selection {true} \
    CONFIG.mode_selection {Advanced} \
@@ -344,11 +357,12 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net axi_interconnect_0_M02_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins axi_interconnect_0/M02_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_0_M03_AXI [get_bd_intf_pins axi_interconnect_0/M03_AXI] [get_bd_intf_pins cms_subsystem_0/s_axi_ctrl]
   connect_bd_intf_net -intf_net axi_interconnect_0_M04_AXI [get_bd_intf_ports M04_AXI_0] [get_bd_intf_pins axi_interconnect_0/M04_AXI]
+  connect_bd_intf_net -intf_net cmc_clk_1 [get_bd_intf_ports cmc_clk] [get_bd_intf_pins clk_wiz_0/CLK_IN1_D]
   connect_bd_intf_net -intf_net cms_subsystem_0_satellite_uart [get_bd_intf_ports satellite_uart_0] [get_bd_intf_pins cms_subsystem_0/satellite_uart]
   connect_bd_intf_net -intf_net pcie_refclk_1 [get_bd_intf_ports pcie_refclk] [get_bd_intf_pins util_ds_buf_0/CLK_IN_D]
   connect_bd_intf_net -intf_net xdma_0_M_AXI_LITE [get_bd_intf_pins axi_interconnect_0/S00_AXI] [get_bd_intf_pins xdma_0/M_AXI_LITE]
   connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pci_express_x1] [get_bd_intf_pins xdma_0/pcie_mgt]
-  connect_bd_intf_net -intf_net cmc_clk_1 [get_bd_intf_ports cmc_clk] [get_bd_intf_pins clk_wiz_0/CLK_IN1_D]
+
   # Create port connections
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_intc_0/irq] [get_bd_pins xdma_0/usr_irq_req]
   connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_ports sys_clk] [get_bd_pins clk_wiz_0/clk_out1]
@@ -365,10 +379,10 @@ proc create_root_design { parentCell } {
   connect_bd_net -net xdma_0_axi_aresetn [get_bd_ports s_axi_areset_n] [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins axi_gpio_1/s_axi_aresetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/M02_ARESETN] [get_bd_pins axi_interconnect_0/M03_ARESETN] [get_bd_pins axi_interconnect_0/M04_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins cms_subsystem_0/aresetn_ctrl] [get_bd_pins xdma_0/axi_aresetn]
 
   # Create address segments
-  assign_bd_address -offset 0x00040000 -range 0x00040000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs M04_AXI_0/Reg] -force
-  assign_bd_address -offset 0x00080000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x00090000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_1/S_AXI/Reg] -force
-  assign_bd_address -offset 0x000A0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_intc_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x08000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs M04_AXI_0/Reg] -force
+  assign_bd_address -offset 0x00040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00050000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_1/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_intc_0/S_AXI/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x00040000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs cms_subsystem_0/s_axi_ctrl/Mem0] -force
 
 
