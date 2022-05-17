@@ -117,6 +117,10 @@ if { $nRet != 0 } {
    return $nRet
 }
 
+add_files -fileset constrs_1 -norecurse {au50_bd.xdc au50_bitstream.xdc}
+add_files -norecurse au50_bd_wrapper.v
+update_compile_order -fileset sources_1
+
 set bCheckIPsPassed 1
 ##################################################################
 # CHECK IPs
