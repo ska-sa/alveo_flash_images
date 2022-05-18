@@ -117,7 +117,7 @@ if { $nRet != 0 } {
    return $nRet
 }
 
-add_files -fileset constrs_1 -norecurse {au50_bd.xdc au50_bitstream.xdc}
+add_files -fileset constrs_1 -norecurse {au50_bsp.xdc au50_bitstream.xdc}
 add_files -norecurse au50_bd_wrapper.v
 update_compile_order -fileset sources_1
 
@@ -274,8 +274,6 @@ proc create_root_design { parentCell } {
    CONFIG.C_DOUT_DEFAULT {0x01010101} \
    CONFIG.C_DOUT_DEFAULT_2 {0xC0FFEE11} \
    CONFIG.C_IS_DUAL {1} \
-   CONFIG.C_TRI_DEFAULT {0x01010101} \
-   CONFIG.C_TRI_DEFAULT_2 {0xDECADE10} \
  ] $axi_gpio_1
 
   # Create instance: axi_intc_0, and set properties
