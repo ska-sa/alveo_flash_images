@@ -43,8 +43,8 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project project_1 au50_bsp -part xcu50-fsvh2104-2-e
-   set_property BOARD_PART xilinx.com:au50:part0:1.2 [current_project]
+   create_project au50_bsp au50_bsp -part xcu50-fsvh2104-2-e
+   set_property BOARD_PART xilinx.com:au50:part0:1.3 [current_project]
 }
 
 
@@ -118,7 +118,7 @@ if { $nRet != 0 } {
 }
 
 add_files -fileset constrs_1 -norecurse {au50_bsp.xdc au50_bitstream.xdc}
-add_files -norecurse au50_bd_wrapper.v
+add_files -norecurse au50_bsp.v
 update_compile_order -fileset sources_1
 
 set bCheckIPsPassed 1
@@ -403,4 +403,24 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
+##################################################################
+# Synthesize, Implement and gen bitfile
+##################################################################
 
+update_compile_order -fileset sources_1
+launch_runs synth_1 -jobs 10
+wait_on_run synth_1
+launch_runs impl_1 -jobs 10
+wait_on_run impl_1
+launch_runs impl_1 -to_step write_bitstream -jobs 10
+wait_on_run impl_1
+open_run impl_1
+
+##################################################################
+# Generate mcs flash file
+##################################################################
+
+set params "up 0x01002000 "
+set bitfile [get_property DIRECTORY [current_project]]/au50_bsp.runs/impl_1/au50_bsp.bit
+set mcsfile [get_property DIRECTORY [current_project]]/au50_bsp.mcs
+write_cfgmem  -format mcs -size 128 -interface SPIx4 -loadbit $params$bitfile -checksum -force -file $mcsfile

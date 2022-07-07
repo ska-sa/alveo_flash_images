@@ -1,6 +1,6 @@
 `timescale 1 ps / 1 ps
 
-module au50_bd_wrapper
+module au50_bsp
    (cmc_clk_clk_n,
     cmc_clk_clk_p,
     hbm_cattrip_tri_o,
