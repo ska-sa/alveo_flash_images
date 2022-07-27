@@ -55,16 +55,16 @@ This will output a bitfile and an MCS flash image file. The bitstream can be pro
 
 The programming of the flash requires a JTAG programmer, please refer to the Alveo documentation for the guide to setting this hardware up.
 
-If you have multiple Alveos in the host machine, you will need to update the programming tcl script to point to the correct card. You can get your Alveos name via the hardware manager by opening the target device. The AU50s are named xcu50_u55n_0, xcu50_u55n_0_1, xcu50_u55n_0_2 etc
+If you have multiple Alveos and JTAG programmers in the host machine, you will need to update the programming tcl script to point to the correct card and programmer. You can get your Alveos name and the JTAG serial number via the hardware manager by opening the target device. The AU50s are named xcu50_u55n_0, xcu50_u55n_0_1, xcu50_u55n_0_2 etc. Use these to configure the programming tcl file.
 
-Start Vivado ensuring that the au50_bsp.mcs file is in the directory vivado is started from.
+Start Vivado ensuring that the au50_bsp.mcs file is in the directory vivado is started from and au50_program.tcl in accessable from where you are running the Vivado Hardware Manager.
 
 In the Vivado tcl command-line run:
 ```bash
 source au50_program.tcl
 ```
 
-This will take a few minutes to erase and prgram the flash. Once done the host machine will require a cold reboot to ensure the PCIe bus is powered down and the new flash imaged is loaded on bootup. 
+This will take a few minutes to erase and prgram the flash. Once done the host machine will require a cold reboot to ensure the PCIe bus is powered down and the new flash image is loaded on bootup. 
 
 Once rebooted run:
 ```bash

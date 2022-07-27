@@ -43,7 +43,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project au50_bsp au50_bsp -part xcu50-fsvh2104-2-e
+   create_project au50_bsp au50_bsp -part xcu50-fsvh2104-2-e -force
    set_property BOARD_PART xilinx.com:au50:part0:1.3 [current_project]
 }
 

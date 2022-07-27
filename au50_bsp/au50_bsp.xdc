@@ -25,7 +25,7 @@ set_property PACKAGE_PIN AW27                    [get_ports pcie_perstn]
 set_property -dict {IOSTANDARD LVCMOS18}         [get_ports pcie_perstn]
 
 # PCIE_REFCLK
-set_property PACKAGE_PIN AF9                     [get_ports pcie_refclk_clk_p]
-#set_property -dict {IOSTANDARD LVDS}             [get_ports pcie_refclk_clk_p]
 set_property PACKAGE_PIN AF8                     [get_ports pcie_refclk_clk_n]
+set_property PACKAGE_PIN AF9                     [get_ports pcie_refclk_clk_p]
 #set_property -dict {IOSTANDARD LVDS}             [get_ports pcie_refclk_clk_n]
+#set_property -dict {IOSTANDARD LVDS}             [get_ports pcie_refclk_clk_p]
